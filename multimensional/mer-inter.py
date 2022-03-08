@@ -52,6 +52,9 @@ def blcoord(c, nc, linesc):
         end = nc + 1
     else:
         end = blc + nc // 2 + nc % 2 + 1
+    if (end > len(linesc)):
+        end = len(linesc)
+        start = end - nc - 1
     for i in range(start, end):
         newc.append(linesc[i])
     return newc
