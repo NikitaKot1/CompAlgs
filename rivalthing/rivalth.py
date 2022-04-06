@@ -1,4 +1,3 @@
-from ctypes.wintypes import tagPOINT
 import random
 import matplotlib.pyplot as plt
 import numpy as np
@@ -6,7 +5,7 @@ import numpy as np
 table1 = []
 table2 = []
 N = 6
-N2 = 12
+N2 = 20
 
 def create_table(N, ymax, ymin):
     f = open("D:/vichAlg/rivalthing/bulshit1.txt", "w")
@@ -17,6 +16,15 @@ def create_table(N, ymax, ymin):
         arr = [i, y, 1]
         f.write("%d %f %d\n" % (i, y, 1))
         table1.append(arr)
+
+def read_table():
+    f = open("D:/vichAlg/rivalthing/bulshit1.txt", "r")
+    table_lines = [line.strip() for line in f]
+    N = 0
+    for l in table_lines:
+        table1.append(list(map(float, l.split())))
+        N += 1
+    f.close()
 
 def matr_for_gauss(table, n, len):
     n += 1
@@ -68,25 +76,8 @@ def f(arrx, arra):
 
 ####################################
 
-def create_cube(N2, ymax, ymin):
-    f = open("D:/vichAlg/rivalthing/bulshit2.txt", "w")
-    y0 = 0
-    x0 = 0
-    z0 = 0
-    for i in range(N2):
-        y = y0 + random.random() * (ymax - ymin) + ymin
-        x = x0 + random.random() * (ymax - ymin) + ymin
-        z = z0 + random.random() * (ymax - ymin) + ymin
-        y0 = y
-        z0 = z
-        x0 = x
-        arr2 = [x, y, z, 1]
-        f.write("%f %f %f %d\n" % (x, y, z, 1))
-        table2.append(arr2)
-
 def third_step(table, n, lenn):
     arrx = np.arange(table[0][0], table[lenn-1][0], 0.1)
-    arry = np.arange(table[0][1], table[lenn-1][1], (table[lenn-1][1] - table[0][1]) / len(arrx))
     newy = []
     for i in range(lenn):
         newy.append(table[i][1])
@@ -114,74 +105,70 @@ def third_step(table, n, lenn):
 def randran(n, vmin, vmax):
     return (vmax - vmin)*np.random.rand(n) + vmin
 
-def func2(x, y, a):
-    return x * a[0] + y * a[1] + a[2]
-
-def func3(x, y, a):
-    return x * a[0] + a[1] * y + a[2] + a[3] * x**2 + a[4] * y**2 + a[5] * x * y
-
 #######################################
-create_table(N, 5, -5)
-n = int(input("Введите n: "))
-vect = []
-for ni in range(1, n+1):
-    gmatr = matr_for_gauss(table1, ni, N)
-    a = gauss(gmatr, ni)
-    xpl = np.arange(table1[0][0], table1[len(table1)-1][0], 0.01)
-    ypl = f(xpl, a)
-    vect.append([xpl, ypl])
 
-xd = []
-yd = []
-for i in range(N):
-    xd.append(table1[i][0])
-    yd.append(table1[i][1])
+tag = int(input("Одномерная -- 1\nДвумерная -- 2\n"))
+if tag == 1:
+    tag = int(input("Сгенерировать точки -- 1\nПрочитать точки -- 2\n"))
+    if tag == 1:
+        create_table(N, 5, -5)
+    else:
+        read_table()
+    tag = int(input("Вывести графики с 1-й по n-ую степень -- 1\nВывести график n-ой степени -- 2\n"))
+    n = int(input("Введите n: "))
+    vect = []
+    for ni in range(1, n+1):
+        gmatr = matr_for_gauss(table1, ni, N)
+        a = gauss(gmatr, ni)
+        xpl = np.arange(table1[0][0], table1[len(table1)-1][0], 0.01)
+        ypl = f(xpl, a)
+        vect.append([xpl, ypl])
 
-plt.figure(1)
-for i in range(n):
-    plt.plot(vect[i][0], vect[i][1], label='n = %d'%(i+1))
-plt.plot(xd, yd, 'ro')
-plt.legend()
-plt.show()
+    xd = []
+    yd = []
+    for i in range(N):
+        xd.append(table1[i][0])
+        yd.append(table1[i][1])
 
-#create_cube(N2, 5, -5)
+    plt.figure(1)
+    if tag == 1:
+        for i in range(n):
+            plt.plot(vect[i][0], vect[i][1], label='n = %d'%(i+1))
+    else:
+        plt.plot(vect[n-1][0], vect[n-1][1], label='n = %d'%(n))
+    plt.plot(xd, yd, 'ro', label='Оригинальные точки')
+    plt.legend()
+    plt.show()
+else:
+    fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+    XS = randran(N2, -50, 50)
+    XS.sort()
+    YS = randran(N2, -50, 50)
+    YS.sort()
+    XS, YS = np.meshgrid(XS, YS)
 
-fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-XS = randran(N2, -5, 5)
-XS.sort()
-YS = randran(N2, -5, 5)
-YS.sort()
-XS, YS = np.meshgrid(XS, YS)
-#RS = np.sqrt(XS**2 + YS**2)
-ZS = XS**2 + YS**2
-
-xxs = XS.tolist()
-yys = YS.tolist()
-zzs = ZS.tolist()
-for i in range(N2):
-    table2.append([xxs[0][i], yys[i][0], zzs[i], 1])
-
-n = int(input("Введите n: "))
-arra = third_step(table2, n, N2)
-dep_x = np.arange(XS.min(), XS.max(), 0.1)
-dep_y = np.arange(YS.min(), YS.max(), (YS.max() - YS.min()) / dep_x.size)
-dep_z = np.array([dep_x for i in range(dep_x.size)])
-#dep_z, dep_z = np.meshgrid(dep_z, dep_z)
-for i in range(dep_x.size):
-    k = np.array(f(dep_y, arra[i]))
-    for j in range(dep_x.size):
-        dep_z[i][j] = k[j]
-    #dep_z = np.append(dep_z, [np.array(f(dep_y, arra[i]))])
-
-dep_x, dep_y = np.meshgrid(dep_x, dep_y)
-# gmatr = urr_2_st2(table2)
-# a = gauss(gmatr, 6)
-# ZS2 = func3(XS, YS, a)
+    ZS = XS**3 + YS**3
 
 
+    xxs = XS.tolist()
+    yys = YS.tolist()
+    zzs = ZS.tolist()
+    for i in range(N2):
+        table2.append([xxs[0][i], yys[i][0], zzs[i], 1])
 
-m = ['o', '^']
-surf = ax.plot_surface(dep_x, dep_y, dep_z)
-#surf = ax.plot_surface(XS, YS, ZS)
-ax.scatter(XS, YS, ZS, marker=m[0])
-plt.show()
+    n = int(input("Введите n: "))
+    arra = third_step(table2, n, N2)
+    dep_x = np.arange(XS.min(), XS.max(), 0.1)
+    dep_y = np.arange(YS.min(), YS.max(), (YS.max() - YS.min()) / dep_x.size)
+    dep_z = np.array([dep_x for i in range(dep_x.size)])
+
+    for i in range(dep_x.size):
+        k = np.array(f(dep_y, arra[i]))
+        for j in range(dep_x.size):
+            dep_z[i][j] = k[j]
+
+    dep_x, dep_y = np.meshgrid(dep_x, dep_y)
+    m = ['o', '^']
+    surf = ax.plot_surface(dep_y, dep_x, dep_z)
+    ax.scatter(XS, YS, ZS, marker=m[0])
+    plt.show()
